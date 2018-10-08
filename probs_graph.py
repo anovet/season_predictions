@@ -3,11 +3,70 @@ This script pulls the probabilities of each team as they are calculated each day
 and plots them over time splitting the results up into the different divisions
 '''
 import os
+from twython import Twython
+import sys
+import datetime
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
 from sqlalchemy import create_engine
+
+def get_twitter_keys(key_file):
+    '''
+    Funciton to get the twitter bot's api keys from a text file
+
+    Input:
+    key_file - text file holding api auth keys
+
+    Output:
+    keys_dict - dictionary with key names mapped to keys
+    '''
+
+    twitter_keys = key_file
+    keys_dict = {}
+
+    with open(twitter_keys, 'r') as keys:
+        api_keys = []
+
+        for line in keys:
+            api_keys.append(line)
+
+        api_keys = list(map(str.strip, api_keys))
+
+        for key in api_keys:
+            name_list = key.split(':')
+            name_list = list(map(str.strip, name_list))
+            key_name, key_value = name_list[0], name_list[1]
+            keys_dict[key_name] = key_value
+        return keys_dict
+
+def tweet_results(file_names, date):
+    '''
+    this function tweets out the results of the prediciton model
+
+    Inputs:
+    df - dataframe of the results of the prediction model
+
+    Outputs:
+    None
+    '''
+
+    twitter_keys = get_twitter_keys(sys.argv[1])
+
+    #set twitter API
+    twitter = Twython(twitter_keys['Consumer Key'], twitter_keys['Consumer Secret Key'],
+                      twitter_keys['Access Key'], twitter_keys['Access Secret Key'])
+
+    tweet_string = f'{date} updated playoff probabilities.'
+
+    media = []
+    for name in file_names:
+        photo = open(f'{name}.png', 'rb')
+        media.append(twitter.upload_media(media=photo)['media_id'])
+        photo.close()
+
+    twitter.update_status(status=tweet_string, media_ids=media)
 
 def draw_graph(df, filename):
     '''
@@ -22,10 +81,11 @@ def draw_graph(df, filename):
     ax = sns.lineplot(x='date', y="playoff_probs", hue="Teams", data=df, markers=True)
     ax.legend(loc='center right', bbox_to_anchor=(1.25, 0.5), ncol=1)
     ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+    ax.set_title(f"{filename} Division Playoff Probabilities")
     x_dates = df['date'].dt.strftime('%Y-%m-%d').sort_values().unique()
     ax.set_xticklabels(labels=x_dates, rotation=45, ha='right')
     ax.set_xticklabels(df['date'].dt.strftime('%m-%d-%Y').unique())
-    #ax.figure.set_size_inches(12.5, 12.5)
+    ax.figure.set_size_inches(10.5, 8.5)
     for x in df['Teams'].unique():
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         text = f"{x}: {round(df[(df.date == df.date.max()) & (df.Teams == x)].loc[:, 'playoff_probs'].values[0] *100, 2)}%"
@@ -38,6 +98,7 @@ def draw_graph(df, filename):
 
 def main():
 
+    date = datetime.datetime.now().strftime('%Y-%m-%d')
 #this pulls in all the season predictions
     engine = create_engine(os.environ.get('DEV_DB_CONNECT'))
     season_query = f"SELECT * FROM nhl_tables.season_predictions predict LEFT JOIN nhl_tables.nhl_teams team ON team.name=predict.team"
@@ -48,6 +109,8 @@ def main():
 
     for division in divisions:
         draw_graph(season_df, division)
+
+    tweet_results(divisions, date)
 
 
 if __name__ == '__main__':
