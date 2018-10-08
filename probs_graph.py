@@ -86,7 +86,7 @@ def draw_bar_graph(df, filename):
     ax.figure.set_size_inches(10.5, 8.5)
     ax.set_title(f"{filename} Division Expected Points")
     plt.xlabel('Team')
-    plt.ylabel('Probability of Making Playoffs')
+    plt.ylabel('Expected Points')
     ax.figure.tight_layout()
     for p in ax.patches:
         ax.text(p.get_x() + p.get_width()/2., p.get_height(), '%d' % (p.get_height()),
