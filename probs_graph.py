@@ -68,6 +68,31 @@ def tweet_results(file_names, date):
 
     twitter.update_status(status=tweet_string, media_ids=media)
 
+    media = []
+    for name in file_names:
+        photo = open(f'{name}barplot.png', 'rb')
+        media.append(twitter.upload_media(media=photo)['media_id'])
+        photo.close()
+
+    twitter.update_status(status = f"Expected Point Amounts. Updated: {date}", media_ids=media)
+
+def draw_bar_graph(df, filename):
+
+    plt.figure()
+    df = df[df.division == filename]
+    df = df.sort_values(by='avg_points', ascending=False)
+    df = df.rename({'abbrev': 'Teams'}, axis='columns')
+    ax = sns.barplot(y="avg_points", x="Teams", data=df)
+    ax.figure.set_size_inches(10.5, 8.5)
+    ax.set_title(f"{filename} Division Expected Points")
+    plt.xlabel('Team')
+    plt.ylabel('Probability of Making Playoffs')
+    ax.figure.tight_layout()
+    for p in ax.patches:
+        ax.text(p.get_x() + p.get_width()/2., p.get_height(), '%d' % (p.get_height()),
+                fontsize=12, color='black', ha='center', va='bottom')
+    ax.figure.savefig(f'{filename}barplot.png')
+
 def draw_graph(df, filename):
     '''
     this function takes a dataframe of probabilities by time and creates a line
@@ -84,6 +109,8 @@ def draw_graph(df, filename):
     ax.set_title(f"{filename} Division Playoff Probabilities")
     x_dates = df['date'].dt.strftime('%Y-%m-%d').sort_values().unique()
     ax.set_xticklabels(labels=x_dates, rotation=45, ha='right')
+    plt.xlabel('Date')
+    plt.ylabel('Probability of Making Playoffs')
     ax.set_xticklabels(df['date'].dt.strftime('%m-%d-%Y').unique())
     ax.figure.set_size_inches(10.5, 8.5)
     for x in df['Teams'].unique():
@@ -109,6 +136,7 @@ def main():
 
     for division in divisions:
         draw_graph(season_df, division)
+        draw_bar_graph(season_df, division)
 
     tweet_results(divisions, date)
 
