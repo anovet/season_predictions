@@ -537,8 +537,8 @@ def main():
                         level=logging.DEBUG)
     '''
 
-    #date = datetime.now().strftime('%Y-%m-%d')
-    date = '2018-10-07'
+    date = datetime.now().strftime('%Y-%m-%d')
+    #date = '2018-10-07'
 
     remaining_sched_df = get_remaining_sched(date)
     results_df = get_results(date)
