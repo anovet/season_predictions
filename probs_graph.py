@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
 from sqlalchemy import create_engine
+from predict_season import get_yest_games
 
 def get_twitter_keys(key_file):
     '''
@@ -126,6 +127,15 @@ def draw_graph(df, filename):
 def main():
 
     date = datetime.datetime.now().strftime('%Y-%m-%d')
+    yest_date = datetime.datetime.now() - datetime.timedelta(1)
+    yest_date = yest_date.strftime('%Y-%m-%d')
+    print(date)
+
+    yest_games = get_yest_games(yest_date)
+    print(yest_games)
+
+    if yest_games == None:
+        return
 #this pulls in all the season predictions
     engine = create_engine(os.environ.get('DEV_DB_CONNECT'))
     season_query = f"SELECT * FROM nhl_tables.season_predictions predict LEFT JOIN nhl_tables.nhl_teams team ON team.name=predict.team"
@@ -138,7 +148,7 @@ def main():
         draw_graph(season_df, division)
         draw_bar_graph(season_df, division)
 
-    tweet_results(divisions, date)
+    #tweet_results(divisions, date)
 
 
 if __name__ == '__main__':
