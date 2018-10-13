@@ -528,6 +528,38 @@ def predict_seasons(standings_df, sched_df, team_results_dict, date):
 
     return total_results_dict
 
+def get_yest_games(date):
+    '''
+    This function will return a list of game ids of NHL games played on the
+    date given
+
+    Input:
+    date - the date on which the nhl games returned was played
+
+    Output:
+    game_ids - a list of NHL game ids played on the date given
+    '''
+
+    game_ids = []
+
+    api_url = ('https://statsapi.web.nhl.com/api/v1/schedule?'
+               'date={}').format(date)
+
+    req = requests.get(api_url)
+    schedule_dict = req.json()
+
+#tests to see if any games were played and if not returns None to let the main
+#script know that there where no games played and to stop running
+    if schedule_dict['totalGames'] == 0:
+        return None
+
+    for date in schedule_dict['dates']:
+        for game in date['games']:
+            game_ids.append(game['gamePk'])
+
+
+    return game_ids
+
 def main():
 
 #setup logging
@@ -538,7 +570,15 @@ def main():
     '''
 
     date = datetime.now().strftime('%Y-%m-%d')
-    #date = '2018-10-07'
+    yest_date = datetime.now() - timedelta(1)
+    yest_date = yest_date.strftime('%Y-%m-%d')
+    print(date)
+
+    yest_games = get_yest_games(yest_date)
+    print(yest_games)
+
+    if yest_games == None:
+        return
 
     remaining_sched_df = get_remaining_sched(date)
     results_df = get_results(date)
@@ -589,8 +629,8 @@ def main():
     probs_df['date'] = date
 
     engine = create_engine(os.environ.get('DEV_DB_CONNECT'))
-    probs_df.to_sql('season_predictions', schema='nhl_tables', con=engine,
-              if_exists='append', index=False)
+    #probs_df.to_sql('season_predictions', schema='nhl_tables', con=engine,
+                    #if_exists='append', index=False)
 
 
 if __name__ == '__main__':
