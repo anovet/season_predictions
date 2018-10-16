@@ -629,8 +629,8 @@ def main():
     probs_df['date'] = date
 
     engine = create_engine(os.environ.get('DEV_DB_CONNECT'))
-    #probs_df.to_sql('season_predictions', schema='nhl_tables', con=engine,
-                    #if_exists='append', index=False)
+    probs_df.to_sql('season_predictions', schema='nhl_tables', con=engine,
+                    if_exists='append', index=False)
 
 
 if __name__ == '__main__':
