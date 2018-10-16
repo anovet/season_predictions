@@ -59,7 +59,7 @@ def tweet_results(file_names, date):
     twitter = Twython(twitter_keys['Consumer Key'], twitter_keys['Consumer Secret Key'],
                       twitter_keys['Access Key'], twitter_keys['Access Secret Key'])
 
-    tweet_string = f'{date} updated playoff probabilities.'
+    tweet_string = f'{date} playoff probabilities (Probabilitè de Sèries Éliminatoires).'
 
     media = []
     for name in file_names:
@@ -75,19 +75,21 @@ def tweet_results(file_names, date):
         media.append(twitter.upload_media(media=photo)['media_id'])
         photo.close()
 
-    twitter.update_status(status = f"Expected Point Amounts. Updated: {date}", media_ids=media)
+    twitter.update_status(status = f"Expected Point Amounts (Points Prédit). Updated (Mettre à Jour): {date}", media_ids=media)
 
 def draw_bar_graph(df, filename):
 
+    en_to_fr_dict = {'Central': 'Centrale', 'Pacific': 'Pacifique',
+                     'Atlantic': 'Atlantique', 'Metropolitan': 'Métropolitaine'}
     plt.figure()
     df = df[df.division == filename]
     df = df.sort_values(by='avg_points', ascending=False)
     df = df.rename({'abbrev': 'Teams'}, axis='columns')
     ax = sns.barplot(y="avg_points", x="Teams", data=df)
     ax.figure.set_size_inches(10.5, 8.5)
-    ax.set_title(f"{filename} Division Expected Points")
-    plt.xlabel('Team')
-    plt.ylabel('Expected Points')
+    ax.set_title(f"{filename} Division Expected Points ({en_to_fr_dict[filename]} Section Points Prédit)")
+    plt.xlabel('Team (Équipe)')
+    plt.ylabel('Expected Points (Points Prédit)')
     ax.figure.tight_layout()
     for p in ax.patches:
         ax.text(p.get_x() + p.get_width()/2., p.get_height(), '%d' % (p.get_height()),
@@ -100,6 +102,9 @@ def draw_graph(df, filename):
     graph and labels it and saves to a file to tweet out later
     '''
 
+    en_to_fr_dict = {'Central': 'Centrale', 'Pacific': 'Pacifique',
+                     'Atlantic': 'Atlantique', 'Metropolitan': 'Métropolitaine'}
+
     plt.figure()
     df = df[df.division == filename]
     df = df.sort_values(by='date')
@@ -107,11 +112,11 @@ def draw_graph(df, filename):
     ax = sns.lineplot(x='date', y="playoff_probs", hue="Teams", data=df, markers=True)
     ax.legend(loc='center right', bbox_to_anchor=(1.25, 0.5), ncol=1)
     ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
-    ax.set_title(f"{filename} Division Playoff Probabilities")
+    ax.set_title(f"{filename} Division Playoff Probabilities ({en_to_fr_dict[filename]} Section Probabilitè de Sèries Éliminatoires)")
     x_dates = df['date'].dt.strftime('%Y-%m-%d').sort_values().unique()
     ax.set_xticklabels(labels=x_dates, rotation=45, ha='right')
-    plt.xlabel('Date')
-    plt.ylabel('Probability of Making Playoffs')
+    plt.xlabel('Date (La Date)')
+    plt.ylabel('Playoffs Probability (Probabilitè de Sèries Éliminatoires)')
     ax.set_xticklabels(df['date'].dt.strftime('%m-%d-%Y').unique())
     ax.figure.set_size_inches(10.5, 8.5)
     for x in df['Teams'].unique():
@@ -148,7 +153,7 @@ def main():
         draw_graph(season_df, division)
         draw_bar_graph(season_df, division)
 
-    tweet_results(divisions, date)
+    #tweet_results(divisions, date)
 
 
 if __name__ == '__main__':
