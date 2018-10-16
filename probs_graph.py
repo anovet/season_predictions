@@ -75,7 +75,7 @@ def tweet_results(file_names, date):
         media.append(twitter.upload_media(media=photo)['media_id'])
         photo.close()
 
-    twitter.update_status(status = f"Expected Point Amounts (Points Prédit). Updated (Mettre à Jour): {date}", media_ids=media)
+    twitter.update_status(status = f"Expected Point Amounts (Points Prédit). Updated (Mis à Jour): {date}", media_ids=media)
 
 def draw_bar_graph(df, filename):
 
