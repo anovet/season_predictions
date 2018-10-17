@@ -77,12 +77,13 @@ def tweet_results(file_names, date):
 
     twitter.update_status(status = f"Expected Point Amounts (Points Prédit). Updated (Mis à Jour): {date}", media_ids=media)
 
-def draw_bar_graph(df, filename):
+def draw_bar_graph(df, filename, date):
 
     en_to_fr_dict = {'Central': 'Centrale', 'Pacific': 'Pacifique',
                      'Atlantic': 'Atlantique', 'Metropolitan': 'Métropolitaine'}
     plt.figure()
     df = df[df.division == filename]
+    df = df[df.date == date]
     df = df.sort_values(by='avg_points', ascending=False)
     df = df.rename({'abbrev': 'Teams'}, axis='columns')
     ax = sns.barplot(y="avg_points", x="Teams", data=df)
@@ -151,7 +152,7 @@ def main():
 
     for division in divisions:
         draw_graph(season_df, division)
-        draw_bar_graph(season_df, division)
+        draw_bar_graph(season_df, division, date)
 
     tweet_results(divisions, date)
 
