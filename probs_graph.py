@@ -114,11 +114,10 @@ def draw_graph(df, filename):
     ax.legend(loc='center right', bbox_to_anchor=(1.25, 0.5), ncol=1)
     ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     ax.set_title(f"{filename} Division Playoff Probabilities ({en_to_fr_dict[filename]} Section Probabilitè de Sèries Éliminatoires)")
-    x_dates = df['date'].dt.strftime('%Y-%m-%d').sort_values().unique()
-    ax.set_xticklabels(labels=x_dates, rotation=45, ha='right')
     plt.xlabel('Date (La Date)')
     plt.ylabel('Playoffs Probability (Probabilitè de Sèries Éliminatoires)')
-    ax.set_xticklabels(df['date'].dt.strftime('%m-%d-%Y').unique())
+    plt.xticks(rotation=90, ha='center')
+    ax.set_xticks(df['date'].dt.strftime('%Y-%m-%d').sort_values().unique())
     ax.figure.set_size_inches(10.5, 8.5)
     for x in df['Teams'].unique():
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
@@ -154,7 +153,7 @@ def main():
         draw_graph(season_df, division)
         draw_bar_graph(season_df, division, date)
 
-    tweet_results(divisions, date)
+    #tweet_results(divisions, date)
 
 
 if __name__ == '__main__':
