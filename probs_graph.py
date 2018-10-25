@@ -153,7 +153,7 @@ def main():
         draw_graph(season_df, division)
         draw_bar_graph(season_df, division, date)
 
-    #tweet_results(divisions, date)
+    tweet_results(divisions, date)
 
 
 if __name__ == '__main__':
